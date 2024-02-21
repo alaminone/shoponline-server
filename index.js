@@ -1,13 +1,17 @@
-const express = require('express')
-const app = express()
-const port = process.env.PORT || 5000;
+const express = require('express');
+const cors = require('cors'); // Import CORS middleware
 require('dotenv').config();
+
+const app = express();
+const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ufduuil.mongodb.net/?retryWrites=true&w=majority`;
+
+
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const uri = "mongodb+srv://shoponline:JY7OTxnuF6gjQFaS@cluster0.ufduuil.mongodb.net/?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -21,31 +25,46 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
+    const usersCollection = client.db("shoponline").collection("users");
 
-
-    const usersCollection = client.db("taskDB").collection("users");
-
-
-    
-    app.get('/users', async (request, response) => {
-        const result = await usersCollection.find().toArray();
-        response.status(200).send(result);
+    app.get('/users', async (req, res) => {
+        const cursor = usersCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
       });
-
-      app.get('/users/per/:email', async (request, response) => {
-        const email = request.params.email;
-        const query = { email: email };
+      app.get('/users/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
         const result = await usersCollection.findOne(query);
-        response.status(200).send(result);
+        res.send(result);
       });
+  
+ // Assuming usersCollection is defined elsewhere, such as in your MongoDB connection setup
 
-      
-    app.post('/users', async (request, response) => {
-        const users = request.body;
-        const result = await usersCollection.insertOne(users);
-        response.status(200).send(result);
-      });
+app.post('/users', async (req, res) => {
+    try {
+        const userData = req.body;
+        const result = await usersCollection.insertOne(userData);
+        console.log("User data inserted:", result.insertedId);
+        res.status(201).json({ message: "User created successfully", insertedId: result.insertedId });
+    } catch (error) {
+        console.error("Error creating user:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+  
+  
+  
+  
+
+  
+  
+
+
+
+ 
 
 
     // Send a ping to confirm a successful connection
@@ -53,7 +72,7 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
@@ -62,9 +81,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-  res.send('successfully connected shoponline server')
-})
+  res.send('Successfully connected to shoponline server');
+});
 
 app.listen(port, () => {
-  console.log(`successfully connected shoponline server on port ${port}`)
-})
+  console.log(`Successfully connected to shoponline server on port ${port}`);
+});
