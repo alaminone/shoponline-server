@@ -27,7 +27,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const usersCollection = client.db("shoponline").collection("users");
-
+    const productsCollection = client.db("shoponline").collection("products");
     app.get('/users', async (req, res) => {
         const cursor = usersCollection.find();
         const result = await cursor.toArray();
@@ -39,20 +39,48 @@ async function run() {
         const result = await usersCollection.findOne(query);
         res.send(result);
       });
-  
- // Assuming usersCollection is defined elsewhere, such as in your MongoDB connection setup
 
-app.post('/users', async (req, res) => {
-    try {
-        const userData = req.body;
-        const result = await usersCollection.insertOne(userData);
-        console.log("User data inserted:", result.insertedId);
-        res.status(201).json({ message: "User created successfully", insertedId: result.insertedId });
-    } catch (error) {
-        console.error("Error creating user:", error);
-        res.status(500).json({ error: "Internal server error" });
-    }
+
+      app.post('/users', async (req, res) => {
+        try {
+            const userData = req.body;
+            const result = await usersCollection.insertOne(userData);
+            console.log("User data inserted:", result.insertedId);
+            res.status(201).json({ message: "User created successfully", insertedId: result.insertedId });
+        } catch (error) {
+            console.error("Error creating user:", error);
+            res.status(500).json({ error: "Internal server error" });
+        }
+    });
+    
+
+
+// Product
+app.post('/products', async (req, res) => {
+  try {
+    const productData = req.body;
+    const result = await productsCollection.insertOne(productData);
+    console.log("Product data inserted:", result.insertedId);
+    res.status(201).json({ message: "Product created successfully", insertedId: result.insertedId });
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
+
+
+app.get('/products', async (req, res) => {
+  try {
+    const products = await productsCollection.find().toArray();
+    res.json(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+
 
   
   
